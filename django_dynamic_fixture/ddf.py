@@ -19,7 +19,8 @@ from django_dynamic_fixture.django_helper import get_related_model, \
     get_unique_model_name, get_unique_field_name, is_model_abstract, \
     field_is_a_parent_link, get_field_by_name_or_raise, get_app_name_of_model, \
     is_model_class, is_relationship_field, is_file_field, is_key_field, \
-    model_has_the_field, enable_auto_now, disable_auto_now, enable_auto_now_add, disable_auto_now_add
+    model_has_the_field, enable_auto_now, disable_auto_now, enable_auto_now_add, disable_auto_now_add, \
+    django_greater_than
 
 
 LOGGER = logging.getLogger('DDFLog')
@@ -455,7 +456,11 @@ class DynamicFixture(object):
             if is_key_field(field) and 'id' not in configuration: continue
             if field.name in self.ignore_fields: continue
             if field.name in DDF_IGNORE_FIELDS and field.name not in configuration: continue
-            if ("%s.%s.%s" % (model_class._meta.app_label, model_class._meta.module_name,field.name) in DDF_IGNORE_FIELDS 
+            if django_greater_than('1.8'):
+                model_name = model_class._meta.model_name
+            else:
+                model_name = model_class._meta.module_name
+            if ("%s.%s.%s" % (model_class._meta.app_label, model_name, field.name) in DDF_IGNORE_FIELDS
                 and field.name not in configuration): continue
             self.set_data_for_a_field(model_class, instance, field, persist_dependencies=persist_dependencies, **configuration)
         number_of_pending_fields = len(self.pending_fields)
